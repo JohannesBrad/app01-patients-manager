@@ -1,23 +1,87 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
+import Error from "./Error";
 
-const Formulario = () => {
+const Formulario = ({ pacientes, setPacientes,paciente, setPaciente }) => {
   const [nombreMascota, setNombreMascota] = useState("");
   const [nombrePropietario, setNombrePropietario] = useState("");
   const [email, setEmail] = useState("");
   const [alta, setAlta] = useState("");
   const [sintomas, setSintomas] = useState("");
-  const [mensajeError, setMensajeError] = useState(false)
+  const [mensajeError, setMensajeError] = useState(false);
 
+  useEffect(() => {
+    //console.log(Object.keys(paciente).length > 0);
+    if (Object.keys(paciente).length > 0) {
+      console.log(paciente);
+      //
+      setNombreMascota(paciente.nombreMascota)
+      setNombrePropietario(paciente.nombrePropietario)
+      setEmail(paciente.email)
+      setAlta(paciente.alta)
+      setSintomas(paciente.sintomas)
+    
+
+    }
+  }, [paciente])
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Validacion
-    if ([nombreMascota, nombrePropietario, email, alta, sintomas].includes("")) {
+    if (
+      [nombreMascota, nombrePropietario, email, alta, sintomas].includes("")
+    ) {
       console.log("estan vacios");
-      setMensajeError(true)
-      return
+      setMensajeError(true);
+      return;
     }
-    setMensajeError(false)
+    setMensajeError(false);
+
+    // Crear funcion de genera id
+    const generarId = () =>{
+      const random = Math.random().toString(36).substring(2)
+      const fecha = Date.now().toString(36)
+
+      return random + fecha
+    }
+
+    // Crear objeto
+    const objetoPaciente = {
+      nombreMascota,
+      nombrePropietario,
+      email,
+      alta,
+      sintomas,
+      //id: generarId()
+    };
+
+    // Editando
+    if(paciente.id){
+      //console.log('editando');
+      objetoPaciente.id = paciente.id
+      console.log(objetoPaciente);
+      console.log(paciente);
+
+      const pacientesActualizados = pacientes.map( pacienteState => pacienteState.id === paciente.id ? objetoPaciente : pacienteState )
+
+      setPacientes(pacientesActualizados)
+      setPaciente({})
+
+    }else{
+      //console.log('agregar nuevo'); Nuevo Registro
+      objetoPaciente.id = generarId()
+      setPacientes([...pacientes, objetoPaciente]);
+    }
+    //setPacientes(objetoPaciente)
+    //setPacientes([...pacientes, objetoPaciente]);
+    //console.log(objetoPaciente);
+
+    // Limpiando inputs
+    setNombreMascota("");
+    setNombrePropietario("");
+    setEmail("");
+    setAlta("");
+    setSintomas("");
+    setMensajeError("");
   };
 
   return (
@@ -35,15 +99,15 @@ const Formulario = () => {
           action=""
           className="bg-white shadow-lg py-5 px-5 rounded-lg"
         >
-            
-             {/* {mensajeError && 'si hay error'} */}
-              {/* si mensajeError es true, entonces muestra si hay error  */}
-              {mensajeError && (
-
-                <div className="bg-red-500 text-white text-center rounded-md py-2 mb-2">
-                    <p>Todos los campos son obligatorios</p>
-                </div>
-              )}
+          {/* {mensajeError && 'si hay error'} */}
+          {/* si mensajeError es true, entonces muestra si hay error  */}
+          {mensajeError && 
+            //  <Error errormsg = {'Todos los campos son obligatorios'} />
+            // Usando children
+            <Error>
+              <p>Todos los campos son obligatorios</p>
+            </Error>
+          }
           <label
             htmlFor="mascota"
             className="block text-gray-700 uppercase font-bold mb-1"
@@ -124,7 +188,7 @@ const Formulario = () => {
           <input
             className="bg-indigo-600 w-full rounded-md p-3 hover:bg-indigo-700 cursor-pointer transition-colors text-white"
             type="submit"
-            value="Agregar Paciente"
+            value={ paciente.id ? 'Editar Paciente': 'Agregar Paciente'}
           />
         </form>
       </div>
